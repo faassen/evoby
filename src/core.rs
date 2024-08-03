@@ -32,7 +32,7 @@ fn execute<E: Executor>(executor: &mut E, instruction: u8) {
     let opcode = instruction >> 4;
     match opcode {
         0 => execute_special0(executor, instruction),
-        1 => execute_special1(executor, instruction),
+        1 => execute_special1(executor, instruction & 0b0000_1111),
         opcode @ 2..=14 => {
             // the operand is the low nibble, consisting of two two-bit registers
             let r0 = instruction & 0b0000_1100 >> 2;
@@ -233,5 +233,19 @@ mod tests {
         let mut executor = TestExecutor::new();
         execute(&mut executor, 0b0000_0111);
         assert_eq!(executor.trace, vec!["if 3".to_string()]);
+    }
+
+    #[test]
+    fn test_inc_r1() {
+        let mut executor = TestExecutor::new();
+        execute(&mut executor, 0b0001_1001);
+        assert_eq!(executor.trace, vec!["inc 1".to_string()]);
+    }
+
+    #[test]
+    fn test_dec_r3() {
+        let mut executor = TestExecutor::new();
+        execute(&mut executor, 0b0001_1111);
+        assert_eq!(executor.trace, vec!["dec 3".to_string()]);
     }
 }
