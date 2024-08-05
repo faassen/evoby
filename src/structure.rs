@@ -65,15 +65,25 @@ impl BlockIdentifier {
             let high_nibble = byte & 0b0000_1111;
             if index < data.len() - 1 {
                 let next_byte = data[index + 1];
-                if is_pattern_byte(next_byte) {
-                    // combine it with the current byte as the low nibble
-                    let low_nibble = next_byte & 0b0000_1111;
-                    return (high_nibble << 4 | low_nibble, index + 2);
-                } else {
-                    todo!();
+                if next_byte == 0 {
+                    return (high_nibble << 4, index + 1);
                 }
+                // combine it with the current byte as the low nibble
+                let low_nibble = next_byte & 0b0000_1111;
+                return (high_nibble << 4 | low_nibble, index + 2);
             } else {
-                todo!();
+                return (high_nibble << 4, index + 1);
+            }
+        }
+
+        // we have another byte before the end that is a pattern byte
+        if index < data.len() - 1 {
+            let next_byte = data[index + 1];
+            if is_pattern_byte(next_byte) {
+                // combine it with the current byte as the low nibble
+                let high_nibble = byte & 0b0000_1111;
+                let low_nibble = next_byte & 0b0000_1111;
+                return (high_nibble << 4 | low_nibble, index + 2);
             }
         }
         (byte, index + 1)
@@ -241,6 +251,42 @@ mod tests {
     #[test]
     fn test_decode_byte_forward_with_full_pattern_byte() {
         let data = [0b1111_0001, 0b1111_0010];
+        let index = 0;
+        let (byte, index) = BlockIdentifier::decode_byte_forward(&data, index);
+        assert_eq!(byte, 0b0001_0010);
+        assert_eq!(index, 2);
+    }
+
+    #[test]
+    fn test_decode_byte_forward_with_pattern_byte_at_end_of_array() {
+        let data = [0b1111_0001];
+        let index = 0;
+        let (byte, index) = BlockIdentifier::decode_byte_forward(&data, index);
+        assert_eq!(byte, 0b0001_0000);
+        assert_eq!(index, 1);
+    }
+
+    #[test]
+    fn test_decode_byte_forward_with_pattern_byte_at_end_of_block() {
+        let data = [0b1111_0001, 0b0000_0000];
+        let index = 0;
+        let (byte, index) = BlockIdentifier::decode_byte_forward(&data, index);
+        assert_eq!(byte, 0b0001_0000);
+        assert_eq!(index, 1);
+    }
+
+    #[test]
+    fn test_decode_byte_forward_with_upper_half_pattern_byte() {
+        let data = [0b1111_0001, 0b0000_0010];
+        let index = 0;
+        let (byte, index) = BlockIdentifier::decode_byte_forward(&data, index);
+        assert_eq!(byte, 0b0001_0010);
+        assert_eq!(index, 2);
+    }
+
+    #[test]
+    fn test_decode_byte_forward_with_lower_half_pattern_byte() {
+        let data = [0b0000_0001, 0b1111_0010];
         let index = 0;
         let (byte, index) = BlockIdentifier::decode_byte_forward(&data, index);
         assert_eq!(byte, 0b0001_0010);
