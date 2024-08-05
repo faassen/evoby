@@ -57,8 +57,20 @@ impl BlockIdentifier {
         if index == 0 {
             return (0, 0);
         }
-        let index = index - 1;
+        let mut index = index - 1;
         let byte = data[index];
+        if byte >> 4 == 0b1111 {
+            let low_nibble = byte & 0b0000_1111;
+            if index > 0 {
+                index -= 1;
+                let byte = data[index];
+                let high_nibble = byte & 0b0000_1111;
+                return (high_nibble << 4 | low_nibble, index);
+            } else {
+                // high nibble is considered 0000
+                return (low_nibble, index);
+            }
+        }
         if byte == 0 {
             return (0, index + 1);
         }
@@ -71,7 +83,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_decode_byte_simple() {
+    fn test_decode_byte_backward_simple() {
         let data = [0b0000_0001, 0b0000_0010, 0b0000_0100, 0b0000_1000];
         // index starts at the end
         let index = data.len();
@@ -82,7 +94,7 @@ mod tests {
     }
 
     #[test]
-    fn test_decode_byte_at_start_of_array() {
+    fn test_decode_byte_backward_at_start_of_array() {
         let data = [0b0000_0001, 0b0000_0010, 0b0000_0100, 0b0000_1000];
         let index = 0;
         let (byte, index) = BlockIdentifier::decode_byte_backward(&data, index);
@@ -92,7 +104,7 @@ mod tests {
     }
 
     #[test]
-    fn test_decode_byte_at_start_of_block() {
+    fn test_decode_byte_backward_at_start_of_block() {
         let data = [0b0000_0000, 0b0000_0010, 0b0000_0100, 0b0000_1000];
         let index = 1;
         let (byte, index) = BlockIdentifier::decode_byte_backward(&data, index);
@@ -102,7 +114,7 @@ mod tests {
     }
 
     #[test]
-    fn test_decode_byte_on_start_of_block() {
+    fn test_decode_byte_backward_on_start_of_block() {
         // shouldn't be possible to reach this state, but let's test it anyway
         let data = [0b0000_0001, 0b0000_0000, 0b0000_0100, 0b0000_1000];
         let index = 1;
@@ -110,6 +122,43 @@ mod tests {
         assert_eq!(byte, 0b0000_0001);
         assert_eq!(index, 0);
     }
+
+    #[test]
+    fn test_decode_byte_backward_with_full_pattern_byte() {
+        let data = [0b1111_0001, 0b1111_0010];
+        let index = data.len();
+        let (byte, index) = BlockIdentifier::decode_byte_backward(&data, index);
+        assert_eq!(byte, 0b0001_0010);
+        assert_eq!(index, 0);
+    }
+
+    #[test]
+    fn test_decode_byte_backward_with_pattern_byte_at_start_of_block() {
+        let data = [0b1111_0010];
+        let index = data.len();
+        let (byte, index) = BlockIdentifier::decode_byte_backward(&data, index);
+        assert_eq!(byte, 0b0000_0010);
+        assert_eq!(index, 0);
+    }
+
+    // #[test]
+    // fn test_decode_byte_backward_with_full_pattern_byte_at_start_of_block() {
+    //     let data = [0b1111_0001, 0b0000_0010];
+    //     let index = 1;
+    //     let (byte, index) = BlockIdentifier::decode_byte_backward(&data, index);
+    //     assert_eq!(byte, 0b0001_0010);
+    //     assert_eq!(index, 0);
+    // }
+
+    // #[test]
+    // fn test_decode_byte_backward_with_full_pattern_byte_at_start_of_array() {
+    //     let data = [0b1111_0001, 0b0000_0010];
+    //     let index = 0;
+    //     let (byte, index) = BlockIdentifier::decode_byte_backward(&data, index);
+    //     assert_eq!(byte, 0b0001_0010);
+    //     assert_eq!(index, 0);
+    // }
+
     // #[test]
     // fn test_decode_block_identifier_4_bytes() {
     //     let data = [0b0000_0001, 0b0000_0010, 0b0000_0100, 0b0000_1000];
