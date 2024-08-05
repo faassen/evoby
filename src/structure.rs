@@ -64,7 +64,12 @@ impl BlockIdentifier {
             if index > 0 {
                 index -= 1;
                 let byte = data[index];
-                let high_nibble = byte & 0b0000_1111;
+                let high_nibble = if byte == 0 {
+                    index += 1;
+                    0
+                } else {
+                    byte & 0b0000_1111
+                };
                 return (high_nibble << 4 | low_nibble, index);
             } else {
                 // high nibble is considered 0000
@@ -133,12 +138,21 @@ mod tests {
     }
 
     #[test]
-    fn test_decode_byte_backward_with_pattern_byte_at_start_of_block() {
+    fn test_decode_byte_backward_with_pattern_byte_at_start_of_array() {
         let data = [0b1111_0010];
         let index = data.len();
         let (byte, index) = BlockIdentifier::decode_byte_backward(&data, index);
         assert_eq!(byte, 0b0000_0010);
         assert_eq!(index, 0);
+    }
+
+    #[test]
+    fn test_decode_byte_backward_with_pattern_byte_at_start_of_block() {
+        let data = [0b0000_0000, 0b1111_0010];
+        let index = data.len();
+        let (byte, index) = BlockIdentifier::decode_byte_backward(&data, index);
+        assert_eq!(byte, 0b0000_0010);
+        assert_eq!(index, 1);
     }
 
     // #[test]
