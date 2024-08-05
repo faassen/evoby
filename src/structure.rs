@@ -105,16 +105,6 @@ impl Instruction {
             _ => unreachable!(),
         }
     }
-    // fn decode(slice: &[u8], index: usize) -> Instruction) {
-    //     let opcode = slice[index] >> 4;
-    //     match opcode {
-    //         0 => {todo!()}
-    //         1 => {todo!()}
-    //         2..=14 => {
-    //             todo!();
-    //     }
-    //     }
-    // }
 }
 
 impl<'a> Strand<'a> {
@@ -129,5 +119,35 @@ impl<'a> Strand<'a> {
             blocks.push(block);
         }
         Strand { blocks }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_decode_call() {
+        let data = [
+            // byte 1
+            0b0101_1000,
+            // byte 2
+            0b1010_1010,
+            // byte 3
+            0b0101_0101,
+            // byte 4
+            0b1111_1000,
+            0b1111_0001,
+            // call
+            0b0000_0001,
+        ];
+        let index = data.len() - 1;
+        let instruction = Instruction::decode(&data, index);
+        assert_eq!(
+            instruction,
+            Instruction::Call(BlockIdentifier::new(
+                0b0101_1000_1010_1010_0101_0101_1000_0001
+            ))
+        );
     }
 }
