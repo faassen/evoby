@@ -2,7 +2,7 @@
 pub(crate) struct BlockIdentifier(u32);
 
 impl BlockIdentifier {
-    fn decode_forward(data: &[u8], index: usize) -> BlockIdentifier {
+    pub(crate) fn decode_forward(data: &[u8], index: usize) -> BlockIdentifier {
         let (first_byte, index) = Self::decode_byte_forward(data, index);
         let (second_byte, index) = Self::decode_byte_forward(data, index);
         let (third_byte, index) = Self::decode_byte_forward(data, index);
@@ -15,7 +15,7 @@ impl BlockIdentifier {
         )
     }
 
-    fn decode_backward(data: &[u8], index: usize) -> BlockIdentifier {
+    pub(crate) fn decode_backward(data: &[u8], index: usize) -> BlockIdentifier {
         todo!();
     }
 
