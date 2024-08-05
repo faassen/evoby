@@ -53,7 +53,7 @@ impl BlockIdentifier {
         todo!();
     }
 
-    fn decode_byte(data: &[u8], index: usize) -> (u8, usize) {
+    fn decode_byte_backward(data: &[u8], index: usize) -> (u8, usize) {
         if index == 0 {
             return (0, 0);
         }
@@ -76,7 +76,7 @@ mod tests {
         // index starts at the end
         let index = data.len();
         // now we get a single byte from the instruction stream, going backwards
-        let (byte, index) = BlockIdentifier::decode_byte(&data, index);
+        let (byte, index) = BlockIdentifier::decode_byte_backward(&data, index);
         assert_eq!(byte, 0b0000_1000);
         assert_eq!(index, data.len() - 1);
     }
@@ -85,7 +85,7 @@ mod tests {
     fn test_decode_byte_at_start_of_array() {
         let data = [0b0000_0001, 0b0000_0010, 0b0000_0100, 0b0000_1000];
         let index = 0;
-        let (byte, index) = BlockIdentifier::decode_byte(&data, index);
+        let (byte, index) = BlockIdentifier::decode_byte_backward(&data, index);
         // we're at the start of the array, so we read 0
         assert_eq!(byte, 0b0000_0000);
         assert_eq!(index, 0);
@@ -95,12 +95,21 @@ mod tests {
     fn test_decode_byte_at_start_of_block() {
         let data = [0b0000_0000, 0b0000_0010, 0b0000_0100, 0b0000_1000];
         let index = 1;
-        let (byte, index) = BlockIdentifier::decode_byte(&data, index);
+        let (byte, index) = BlockIdentifier::decode_byte_backward(&data, index);
         // at start of block we also read 0 and don't move index
         assert_eq!(byte, 0b0000_0000);
         assert_eq!(index, 1);
     }
 
+    #[test]
+    fn test_decode_byte_on_start_of_block() {
+        // shouldn't be possible to reach this state, but let's test it anyway
+        let data = [0b0000_0001, 0b0000_0000, 0b0000_0100, 0b0000_1000];
+        let index = 1;
+        let (byte, index) = BlockIdentifier::decode_byte_backward(&data, index);
+        assert_eq!(byte, 0b0000_0001);
+        assert_eq!(index, 0);
+    }
     // #[test]
     // fn test_decode_block_identifier_4_bytes() {
     //     let data = [0b0000_0001, 0b0000_0010, 0b0000_0100, 0b0000_1000];
