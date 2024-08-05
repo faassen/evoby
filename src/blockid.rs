@@ -6,7 +6,7 @@ impl BlockIdentifier {
         let (first_byte, index) = Self::decode_byte_forward(data, index);
         let (second_byte, index) = Self::decode_byte_forward(data, index);
         let (third_byte, index) = Self::decode_byte_forward(data, index);
-        let (fourth_byte, index) = Self::decode_byte_forward(data, index);
+        let (fourth_byte, _index) = Self::decode_byte_forward(data, index);
         BlockIdentifier(
             (first_byte as u32) << 24
                 | (second_byte as u32) << 16
@@ -16,7 +16,16 @@ impl BlockIdentifier {
     }
 
     pub(crate) fn decode_backward(data: &[u8], index: usize) -> BlockIdentifier {
-        todo!();
+        let (fourth_byte, index) = Self::decode_byte_backward(data, index);
+        let (third_byte, index) = Self::decode_byte_backward(data, index);
+        let (second_byte, index) = Self::decode_byte_backward(data, index);
+        let (first_byte, _index) = Self::decode_byte_backward(data, index);
+        BlockIdentifier(
+            (first_byte as u32) << 24
+                | (second_byte as u32) << 16
+                | (third_byte as u32) << 8
+                | fourth_byte as u32,
+        )
     }
 
     fn decode_byte_forward(data: &[u8], index: usize) -> (u8, usize) {
@@ -203,6 +212,17 @@ mod tests {
         let data = [0b0000_0001, 0b0000_0010, 0b0000_0100, 0b0000_1000];
         let index = 0;
         let identifier = BlockIdentifier::decode_forward(&data, index);
+        assert_eq!(
+            identifier,
+            BlockIdentifier(0b0000_0001_0000_0010_0000_0100_0000_1000)
+        );
+    }
+
+    #[test]
+    fn test_decode_block_identifier_backward() {
+        let data = [0b0000_0001, 0b0000_0010, 0b0000_0100, 0b0000_1000];
+        let index = data.len();
+        let identifier = BlockIdentifier::decode_backward(&data, index);
         assert_eq!(
             identifier,
             BlockIdentifier(0b0000_0001_0000_0010_0000_0100_0000_1000)
