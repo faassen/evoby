@@ -80,8 +80,9 @@ impl Instruction {
                 }
             }
             2..=14 => {
-                let r0 = RegisterId(bytecode & 0b0000_1100 >> 2);
-                let r1 = RegisterId(bytecode & 0b0000_0011);
+                let operand = bytecode & 0b0000_1111;
+                let r0 = RegisterId((operand & 0b0000_1100) >> 2);
+                let r1 = RegisterId(operand & 0b0000_0011);
                 match opcode {
                     2 => Instruction::Store(r0, r1),
                     3 => Instruction::Load(r0, r1),
@@ -163,5 +164,12 @@ mod tests {
         let data = [0b0000_0111];
         let instruction = Instruction::decode(&data, 0);
         assert_eq!(instruction, Instruction::If(RegisterId(3)));
+    }
+
+    #[test]
+    fn test_add_r0_r1() {
+        let data = [0b0100_0001];
+        let instruction = Instruction::decode(&data, 0);
+        assert_eq!(instruction, Instruction::Add(RegisterId(0), RegisterId(1)));
     }
 }
