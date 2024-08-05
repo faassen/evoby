@@ -150,4 +150,18 @@ mod tests {
             ))
         );
     }
+
+    #[test]
+    fn test_decode_if_0() {
+        let data = [0b0000_0100];
+        let instruction = Instruction::decode(&data, 0);
+        assert_eq!(instruction, Instruction::If(RegisterId(0)));
+    }
+
+    #[test]
+    fn test_decode_if_3() {
+        let data = [0b0000_0111];
+        let instruction = Instruction::decode(&data, 0);
+        assert_eq!(instruction, Instruction::If(RegisterId(3)));
+    }
 }
