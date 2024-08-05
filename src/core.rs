@@ -110,9 +110,75 @@ fn register_operand(instruction: u8) -> u8 {
     instruction & 0b0000_0011
 }
 
-struct Processor {}
+struct Processor<'a> {
+    instruction_memory: Vec<u8>,
+    main_memory: &'a mut [u8],
+    main_memory_mask: usize,
+    pc: usize,
+    stack: Vec<u32>,
+    registers: [u32; 4],
+}
 
-impl Processor {}
+impl<'a> Processor<'a> {
+    fn new(main_memory: &'a mut [u8]) -> Processor {
+        assert!(main_memory.len().is_power_of_two());
+        // check how many bits are needed to address the main memory
+        let main_memory_bits = main_memory.len().trailing_zeros();
+        // construct a mask for this number of bits
+        let main_memory_mask = (1 << main_memory_bits) - 1;
+
+        Processor {
+            instruction_memory: Vec::new(),
+            main_memory,
+            main_memory_mask,
+            pc: 0,
+            stack: Vec::new(),
+            registers: [0; 4],
+        }
+    }
+}
+
+impl<'a> Executor for Processor<'a> {
+    fn call(&mut self) {}
+    fn return_(&mut self) {}
+    fn value(&mut self) {}
+    fn if_(&mut self, r0: u8) {}
+    fn repeat(&mut self, r0: u8) {}
+    fn not(&mut self, r0: u8) {}
+    fn push(&mut self, r0: u8) {}
+    fn pop(&mut self, r0: u8) {}
+    fn inc(&mut self, r0: u8) {}
+    fn dec(&mut self, r0: u8) {}
+    fn store(&mut self, r0: u8, r1: u8) {
+        let address = self.registers[r0 as usize] as usize & self.main_memory_mask;
+        let value = self.registers[r1 as usize];
+        // we should check for overflow first
+        // write the value to the memory, little-endian
+        self.main_memory[address] = value as u8;
+
+        self.main_memory[address + 1] = (value >> 8) as u8;
+        self.main_memory[address + 2] = (value >> 16) as u8;
+        self.main_memory[address + 3] = (value >> 24) as u8;
+    }
+    fn load(&mut self, r0: u8, r1: u8) {
+        let address = self.registers[r0 as usize] as usize & self.main_memory_mask;
+
+        // load the value from the memory, little-endian
+        // we should check for overflow first
+        // u32::from_le_bytes(&self.main_memory[address..address + 4])
+    }
+    fn add(&mut self, r0: u8, r1: u8) {}
+    fn sub(&mut self, r0: u8, r1: u8) {}
+    fn mul(&mut self, r0: u8, r1: u8) {}
+    fn div(&mut self, r0: u8, r1: u8) {}
+    fn eq(&mut self, r0: u8, r1: u8) {}
+    fn gt(&mut self, r0: u8, r1: u8) {}
+    fn and(&mut self, r0: u8, r1: u8) {}
+    fn or(&mut self, r0: u8, r1: u8) {}
+    fn xor(&mut self, r0: u8, r1: u8) {}
+    fn unknown0(&mut self, r0: u8, r1: u8) {}
+    fn unknown1(&mut self, r0: u8, r1: u8) {}
+}
 
 #[cfg(test)]
 mod tests {
