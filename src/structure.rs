@@ -77,7 +77,7 @@ impl BlockIdentifier {
             }
         }
         if byte == 0 {
-            return (0, index + 1);
+            index += 1;
         }
         (byte, index)
     }
