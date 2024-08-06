@@ -1,3 +1,5 @@
+use crate::blockid::BlockIdentifier;
+
 #[derive(Debug, PartialEq, Eq, Hash)]
 struct RegisterId(u8);
 
@@ -97,6 +99,8 @@ impl Instruction {
 
 #[cfg(test)]
 mod tests {
+    use crate::blockid::BlockIdentifier;
+
     use super::*;
 
     #[test]
