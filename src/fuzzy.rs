@@ -62,10 +62,12 @@ fn hamming_distance(a: u32, b: u32) -> u32 {
 
 #[cfg(test)]
 mod tests {
+    use rand::{rngs::SmallRng, SeedableRng};
+
     use super::*;
 
     #[test]
-    fn test_matching_from_index_0_with_max_distance_0() {
+    fn test_matching_with_max_distance_0() {
         let mut fuzzy_bitmap = FuzzyBitMap::new(0, 0.5);
         fuzzy_bitmap.insert(0b0000, 0);
         fuzzy_bitmap.insert(0b0001, 1);
@@ -78,10 +80,13 @@ mod tests {
         // now look for matches
         let matches = fuzzy_bitmap.matching(0b0000, 0);
         assert_eq!(matches, vec![&0b0000]);
+        // how about we look from index 1?
+        let matches = fuzzy_bitmap.matching(0b0000, 1);
+        assert_eq!(matches, Vec::<&u32>::new());
     }
 
     #[test]
-    fn test_matching_from_index_0_with_max_distance_1() {
+    fn test_matching_with_max_distance_1() {
         let mut fuzzy_bitmap = FuzzyBitMap::new(1, 0.5);
         fuzzy_bitmap.insert(0b0000, 0);
         fuzzy_bitmap.insert(0b0001, 1);
@@ -94,6 +99,9 @@ mod tests {
         // now look for matches
         let matches = fuzzy_bitmap.matching(0b0000, 0);
         assert_eq!(matches, vec![&0b0000, &0b0001, &0b0010, &0b0100]);
+        // how about we look from index 1?
+        let matches = fuzzy_bitmap.matching(0b0000, 1);
+        assert_eq!(matches, vec![&0b0001, &0b0010, &0b0100]);
     }
 
     #[test]
@@ -113,5 +121,47 @@ mod tests {
             matches,
             vec![&0b0000, &0b0001, &0b0010, &0b0100, &0b0011, &0b0101, &0b0110]
         );
+    }
+
+    #[test]
+    fn test_no_match_with_distance_2() {
+        let mut fuzzy_bitmap = FuzzyBitMap::new(2, 0.5);
+        fuzzy_bitmap.insert(0b1101, 1);
+        fuzzy_bitmap.insert(0b1111, 2);
+        // now look for matches
+        let matches = fuzzy_bitmap.matching(0b0000, 0);
+        assert_eq!(matches, Vec::<&u32>::new());
+    }
+
+    #[test]
+    fn test_get_no_match_with_distance_2() {
+        let mut fuzzy_bitmap = FuzzyBitMap::new(2, 0.5);
+        fuzzy_bitmap.insert(0b1101, 1);
+        fuzzy_bitmap.insert(0b1111, 2);
+        let mut rng = SmallRng::from_seed([0; 32]);
+        let matches = fuzzy_bitmap.get(0b0000, 0, &mut rng);
+        assert_eq!(matches, None);
+    }
+
+    #[test]
+    fn test_get_match_with_distance_1() {
+        let mut fuzzy_bitmap = FuzzyBitMap::new(1, 0.5);
+        fuzzy_bitmap.insert(0b0000, 0);
+        fuzzy_bitmap.insert(0b0001, 1);
+        fuzzy_bitmap.insert(0b0010, 2);
+        fuzzy_bitmap.insert(0b0011, 3);
+        fuzzy_bitmap.insert(0b0100, 4);
+        fuzzy_bitmap.insert(0b0101, 5);
+        fuzzy_bitmap.insert(0b0110, 6);
+        fuzzy_bitmap.insert(0b0111, 7);
+        let mut rng = SmallRng::from_seed([0; 32]);
+        let matches = fuzzy_bitmap.get(0b0000, 0, &mut rng);
+        assert_eq!(matches, Some(&0b0000));
+        let matches = fuzzy_bitmap.get(0b0000, 0, &mut rng);
+        assert_eq!(matches, Some(&0b0000));
+        let matches = fuzzy_bitmap.get(0b0000, 0, &mut rng);
+        assert_eq!(matches, Some(&0b0000));
+        let matches = fuzzy_bitmap.get(0b0001, 0, &mut rng);
+        assert_eq!(matches, Some(&0b0001));
     }
 }
