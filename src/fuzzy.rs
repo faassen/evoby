@@ -64,7 +64,22 @@ fn hamming_distance(a: u32, b: u32) -> u32 {
 mod tests {
     use super::*;
 
-    // a test for matching from index 0, with a max distance of 1
+    #[test]
+    fn test_matching_from_index_0_with_max_distance_0() {
+        let mut fuzzy_bitmap = FuzzyBitMap::new(0, 0.5);
+        fuzzy_bitmap.insert(0b0000, 0);
+        fuzzy_bitmap.insert(0b0001, 1);
+        fuzzy_bitmap.insert(0b0010, 2);
+        fuzzy_bitmap.insert(0b0011, 3);
+        fuzzy_bitmap.insert(0b0100, 4);
+        fuzzy_bitmap.insert(0b0101, 5);
+        fuzzy_bitmap.insert(0b0110, 6);
+        fuzzy_bitmap.insert(0b0111, 7);
+        // now look for matches
+        let matches = fuzzy_bitmap.matching(0b0000, 0);
+        assert_eq!(matches, vec![&0b0000]);
+    }
+
     #[test]
     fn test_matching_from_index_0_with_max_distance_1() {
         let mut fuzzy_bitmap = FuzzyBitMap::new(1, 0.5);
@@ -79,5 +94,24 @@ mod tests {
         // now look for matches
         let matches = fuzzy_bitmap.matching(0b0000, 0);
         assert_eq!(matches, vec![&0b0000, &0b0001, &0b0010, &0b0100]);
+    }
+
+    #[test]
+    fn test_matching_from_index_0_with_max_distance_2() {
+        let mut fuzzy_bitmap = FuzzyBitMap::new(2, 0.5);
+        fuzzy_bitmap.insert(0b0000, 0);
+        fuzzy_bitmap.insert(0b0001, 1);
+        fuzzy_bitmap.insert(0b0010, 2);
+        fuzzy_bitmap.insert(0b0011, 3);
+        fuzzy_bitmap.insert(0b0100, 4);
+        fuzzy_bitmap.insert(0b0101, 5);
+        fuzzy_bitmap.insert(0b0110, 6);
+        fuzzy_bitmap.insert(0b0111, 7);
+        // now look for matches
+        let matches = fuzzy_bitmap.matching(0b0000, 0);
+        assert_eq!(
+            matches,
+            vec![&0b0000, &0b0001, &0b0010, &0b0100, &0b0011, &0b0101, &0b0110]
+        );
     }
 }
