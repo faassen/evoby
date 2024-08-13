@@ -1,4 +1,4 @@
-use crate::blockpattern::{BlockId, BlockPattern};
+use crate::blockpattern::BlockPattern;
 
 #[derive(Debug, PartialEq, Eq, Hash)]
 struct RegisterId(u8);
