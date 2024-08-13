@@ -1,4 +1,9 @@
-use crate::blockid::BlockPattern;
+use rand::Rng;
+
+use crate::{
+    blockid::{BlockId, BlockPattern},
+    structure::Blocks,
+};
 
 #[derive(Debug, PartialEq, Eq, Hash)]
 struct RegisterId(u8);
@@ -40,7 +45,10 @@ impl Instruction {
                     0 => {
                         unreachable!()
                     }
-                    1 => Instruction::Call(BlockPattern::decode_backward(slice, index)),
+                    1 => {
+                        let block_pattern = BlockPattern::decode_backward(slice, index);
+                        Instruction::Call(block_pattern)
+                    }
                     2 => Instruction::Return,
                     3 => todo!(),
                     4..=7 => {

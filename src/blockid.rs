@@ -1,3 +1,18 @@
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub(crate) struct BlockId {
+    strand_id: usize,
+    block_index: usize,
+}
+
+impl BlockId {
+    pub(crate) fn new(strand_id: usize, block_index: usize) -> BlockId {
+        BlockId {
+            strand_id,
+            block_index,
+        }
+    }
+}
+
 #[derive(Debug, PartialEq, Eq, Hash)]
 pub(crate) struct BlockPattern(u32);
 
@@ -91,6 +106,10 @@ impl BlockPattern {
             }
         }
         (byte, index)
+    }
+
+    pub(crate) fn get(&self) -> u32 {
+        self.0
     }
 }
 

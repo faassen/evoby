@@ -8,7 +8,7 @@
 
 use rand::Rng;
 
-struct FuzzyBitMap<V> {
+pub(crate) struct FuzzyBitMap<V> {
     data: Vec<(u32, V)>,
     max_distance: u32,
     match_chance: f64,
