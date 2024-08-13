@@ -1,6 +1,6 @@
 use rand::Rng;
 
-use crate::blockid::{BlockId, BlockPattern};
+use crate::blockpattern::{BlockId, BlockPattern};
 use crate::fuzzy::FuzzyBitMap;
 
 pub(crate) struct Strand<'a> {

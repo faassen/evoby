@@ -1,9 +1,4 @@
-use rand::Rng;
-
-use crate::{
-    blockid::{BlockId, BlockPattern},
-    structure::Blocks,
-};
+use crate::blockpattern::{BlockId, BlockPattern};
 
 #[derive(Debug, PartialEq, Eq, Hash)]
 struct RegisterId(u8);
@@ -107,7 +102,7 @@ impl Instruction {
 
 #[cfg(test)]
 mod tests {
-    use crate::blockid::BlockPattern;
+    use crate::blockpattern::BlockPattern;
 
     use super::*;
 
