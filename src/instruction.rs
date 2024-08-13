@@ -1,11 +1,19 @@
-use crate::blockpattern::BlockPattern;
+use crate::{blockid::BlockId, blockpattern::BlockPattern};
 
 #[derive(Debug, PartialEq, Eq, Hash)]
 struct RegisterId(u8);
 
+// block references start out as a pattern reference,
+// and are then resolved to a block id.
+#[derive(Debug, PartialEq, Eq)]
+enum BlockRef {
+    Pattern(BlockPattern),
+    Id(BlockId),
+}
+
 #[derive(Debug, PartialEq, Eq)]
 enum Instruction {
-    Call(BlockPattern),
+    Call(BlockRef),
     Return,
     If(RegisterId),
     Repeat(RegisterId),
@@ -42,7 +50,7 @@ impl Instruction {
                     }
                     1 => {
                         let block_pattern = BlockPattern::decode_backward(slice, index);
-                        Instruction::Call(block_pattern)
+                        Instruction::Call(BlockRef::Pattern(block_pattern))
                     }
                     2 => Instruction::Return,
                     3 => todo!(),
@@ -125,7 +133,9 @@ mod tests {
         let instruction = Instruction::decode(&data, index);
         assert_eq!(
             instruction,
-            Instruction::Call(BlockPattern::new(0b0101_1000_1010_1010_0101_0101_1000_0001))
+            Instruction::Call(BlockRef::Pattern(BlockPattern::new(
+                0b0101_1000_1010_1010_0101_0101_1000_0001
+            )))
         );
     }
 

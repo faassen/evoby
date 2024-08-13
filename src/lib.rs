@@ -1,3 +1,4 @@
+mod blockid;
 mod blockpattern;
 mod core;
 mod fuzzy;
