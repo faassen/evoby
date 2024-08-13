@@ -1,4 +1,4 @@
-use crate::blockid::BlockIdentifier;
+use crate::blockid::BlockPattern;
 
 struct Strand<'a> {
     blocks: Vec<Block<'a>>,
@@ -6,7 +6,7 @@ struct Strand<'a> {
 
 #[derive(Debug)]
 struct Block<'a> {
-    identifier: BlockIdentifier,
+    identifier: BlockPattern,
     slice: &'a [u8],
 }
 
@@ -17,7 +17,7 @@ impl<'a> Strand<'a> {
         let slices = data.split(|&byte| byte == 0);
         let mut blocks = Vec::new();
         for slice in slices {
-            let identifier = BlockIdentifier::decode_forward(slice, 0);
+            let identifier = BlockPattern::decode_forward(slice, 0);
             let block = Block { identifier, slice };
             blocks.push(block);
         }

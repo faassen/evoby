@@ -1,11 +1,11 @@
-use crate::blockid::BlockIdentifier;
+use crate::blockid::BlockPattern;
 
 #[derive(Debug, PartialEq, Eq, Hash)]
 struct RegisterId(u8);
 
 #[derive(Debug, PartialEq, Eq)]
 enum Instruction {
-    Call(BlockIdentifier),
+    Call(BlockPattern),
     Return,
     If(RegisterId),
     Repeat(RegisterId),
@@ -40,7 +40,7 @@ impl Instruction {
                     0 => {
                         unreachable!()
                     }
-                    1 => Instruction::Call(BlockIdentifier::decode_backward(slice, index)),
+                    1 => Instruction::Call(BlockPattern::decode_backward(slice, index)),
                     2 => Instruction::Return,
                     3 => todo!(),
                     4..=7 => {
@@ -99,7 +99,7 @@ impl Instruction {
 
 #[cfg(test)]
 mod tests {
-    use crate::blockid::BlockIdentifier;
+    use crate::blockid::BlockPattern;
 
     use super::*;
 
@@ -122,9 +122,7 @@ mod tests {
         let instruction = Instruction::decode(&data, index);
         assert_eq!(
             instruction,
-            Instruction::Call(BlockIdentifier::new(
-                0b0101_1000_1010_1010_0101_0101_1000_0001
-            ))
+            Instruction::Call(BlockPattern::new(0b0101_1000_1010_1010_0101_0101_1000_0001))
         );
     }
 

@@ -1,17 +1,17 @@
 #[derive(Debug, PartialEq, Eq, Hash)]
-pub(crate) struct BlockIdentifier(u32);
+pub(crate) struct BlockPattern(u32);
 
-impl BlockIdentifier {
-    pub(crate) fn new(data: u32) -> BlockIdentifier {
-        BlockIdentifier(data)
+impl BlockPattern {
+    pub(crate) fn new(data: u32) -> BlockPattern {
+        BlockPattern(data)
     }
 
-    pub(crate) fn decode_forward(data: &[u8], index: usize) -> BlockIdentifier {
+    pub(crate) fn decode_forward(data: &[u8], index: usize) -> BlockPattern {
         let (first_byte, index) = Self::decode_byte_forward(data, index);
         let (second_byte, index) = Self::decode_byte_forward(data, index);
         let (third_byte, index) = Self::decode_byte_forward(data, index);
         let (fourth_byte, _index) = Self::decode_byte_forward(data, index);
-        BlockIdentifier(
+        BlockPattern(
             (first_byte as u32) << 24
                 | (second_byte as u32) << 16
                 | (third_byte as u32) << 8
@@ -19,12 +19,12 @@ impl BlockIdentifier {
         )
     }
 
-    pub(crate) fn decode_backward(data: &[u8], index: usize) -> BlockIdentifier {
+    pub(crate) fn decode_backward(data: &[u8], index: usize) -> BlockPattern {
         let (fourth_byte, index) = Self::decode_byte_backward(data, index);
         let (third_byte, index) = Self::decode_byte_backward(data, index);
         let (second_byte, index) = Self::decode_byte_backward(data, index);
         let (first_byte, _index) = Self::decode_byte_backward(data, index);
-        BlockIdentifier(
+        BlockPattern(
             (first_byte as u32) << 24
                 | (second_byte as u32) << 16
                 | (third_byte as u32) << 8
@@ -106,7 +106,7 @@ mod tests {
     fn test_decode_byte_backward_simple() {
         let data = [0b0000_0001, 0b0000_0010, 0b0000_0100, 0b0000_1000];
         let index = data.len();
-        let (byte, index) = BlockIdentifier::decode_byte_backward(&data, index);
+        let (byte, index) = BlockPattern::decode_byte_backward(&data, index);
         assert_eq!(byte, 0b0000_1000);
         assert_eq!(index, data.len() - 1);
     }
@@ -115,7 +115,7 @@ mod tests {
     fn test_decode_byte_backward_at_start_of_array() {
         let data = [0b0000_0001, 0b0000_0010, 0b0000_0100, 0b0000_1000];
         let index = 0;
-        let (byte, index) = BlockIdentifier::decode_byte_backward(&data, index);
+        let (byte, index) = BlockPattern::decode_byte_backward(&data, index);
         // we're at the start of the array, so we read 0
         assert_eq!(byte, 0b0000_0000);
         assert_eq!(index, 0);
@@ -125,7 +125,7 @@ mod tests {
     fn test_decode_byte_backward_with_full_pattern_byte() {
         let data = [0b1111_0001, 0b1111_0010];
         let index = data.len();
-        let (byte, index) = BlockIdentifier::decode_byte_backward(&data, index);
+        let (byte, index) = BlockPattern::decode_byte_backward(&data, index);
         assert_eq!(byte, 0b0001_0010);
         assert_eq!(index, 0);
     }
@@ -134,7 +134,7 @@ mod tests {
     fn test_decode_byte_backward_with_pattern_byte_at_start_of_array() {
         let data = [0b1111_0010];
         let index = data.len();
-        let (byte, index) = BlockIdentifier::decode_byte_backward(&data, index);
+        let (byte, index) = BlockPattern::decode_byte_backward(&data, index);
         assert_eq!(byte, 0b0000_0010);
         assert_eq!(index, 0);
     }
@@ -143,7 +143,7 @@ mod tests {
     fn test_decode_byte_backward_with_lower_half_pattern_byte() {
         let data = [0b0000_0001, 0b1111_0010];
         let index = data.len();
-        let (byte, index) = BlockIdentifier::decode_byte_backward(&data, index);
+        let (byte, index) = BlockPattern::decode_byte_backward(&data, index);
         assert_eq!(byte, 0b0001_0010);
         assert_eq!(index, 0);
     }
@@ -152,7 +152,7 @@ mod tests {
     fn test_decode_byte_backward_with_upper_half_pattern_byte() {
         let data = [0b1111_0001, 0b0000_0010];
         let index = data.len();
-        let (byte, index) = BlockIdentifier::decode_byte_backward(&data, index);
+        let (byte, index) = BlockPattern::decode_byte_backward(&data, index);
         assert_eq!(byte, 0b0001_0010);
         assert_eq!(index, 0);
     }
@@ -161,7 +161,7 @@ mod tests {
     fn test_decode_byte_forward_simple() {
         let data = [0b0000_0001, 0b0000_0010, 0b0000_0100, 0b0000_1000];
         let index = 0;
-        let (byte, index) = BlockIdentifier::decode_byte_forward(&data, index);
+        let (byte, index) = BlockPattern::decode_byte_forward(&data, index);
         assert_eq!(byte, 0b0000_0001);
         assert_eq!(index, 1);
     }
@@ -170,7 +170,7 @@ mod tests {
     fn test_decode_byte_forward_at_end_of_array() {
         let data = [0b0000_0001, 0b0000_0010, 0b0000_0100, 0b0000_1000];
         let index = data.len();
-        let (byte, index) = BlockIdentifier::decode_byte_forward(&data, index);
+        let (byte, index) = BlockPattern::decode_byte_forward(&data, index);
         assert_eq!(byte, 0b0000_0000);
         assert_eq!(index, data.len());
     }
@@ -179,7 +179,7 @@ mod tests {
     fn test_decode_byte_forward_with_full_pattern_byte() {
         let data = [0b1111_0001, 0b1111_0010];
         let index = 0;
-        let (byte, index) = BlockIdentifier::decode_byte_forward(&data, index);
+        let (byte, index) = BlockPattern::decode_byte_forward(&data, index);
         assert_eq!(byte, 0b0001_0010);
         assert_eq!(index, 2);
     }
@@ -188,7 +188,7 @@ mod tests {
     fn test_decode_byte_forward_with_pattern_byte_at_end_of_array() {
         let data = [0b1111_0001];
         let index = 0;
-        let (byte, index) = BlockIdentifier::decode_byte_forward(&data, index);
+        let (byte, index) = BlockPattern::decode_byte_forward(&data, index);
         assert_eq!(byte, 0b0001_0000);
         assert_eq!(index, 1);
     }
@@ -197,7 +197,7 @@ mod tests {
     fn test_decode_byte_forward_with_upper_half_pattern_byte() {
         let data = [0b1111_0001, 0b0000_0010];
         let index = 0;
-        let (byte, index) = BlockIdentifier::decode_byte_forward(&data, index);
+        let (byte, index) = BlockPattern::decode_byte_forward(&data, index);
         assert_eq!(byte, 0b0001_0010);
         assert_eq!(index, 2);
     }
@@ -206,7 +206,7 @@ mod tests {
     fn test_decode_byte_forward_with_lower_half_pattern_byte() {
         let data = [0b0000_0001, 0b1111_0010];
         let index = 0;
-        let (byte, index) = BlockIdentifier::decode_byte_forward(&data, index);
+        let (byte, index) = BlockPattern::decode_byte_forward(&data, index);
         assert_eq!(byte, 0b0001_0010);
         assert_eq!(index, 2);
     }
@@ -215,10 +215,10 @@ mod tests {
     fn test_decode_block_identifier_forward() {
         let data = [0b0000_0001, 0b0000_0010, 0b0000_0100, 0b0000_1000];
         let index = 0;
-        let identifier = BlockIdentifier::decode_forward(&data, index);
+        let identifier = BlockPattern::decode_forward(&data, index);
         assert_eq!(
             identifier,
-            BlockIdentifier(0b0000_0001_0000_0010_0000_0100_0000_1000)
+            BlockPattern(0b0000_0001_0000_0010_0000_0100_0000_1000)
         );
     }
 
@@ -226,10 +226,10 @@ mod tests {
     fn test_decode_block_identifier_backward() {
         let data = [0b0000_0001, 0b0000_0010, 0b0000_0100, 0b0000_1000];
         let index = data.len();
-        let identifier = BlockIdentifier::decode_backward(&data, index);
+        let identifier = BlockPattern::decode_backward(&data, index);
         assert_eq!(
             identifier,
-            BlockIdentifier(0b0000_0001_0000_0010_0000_0100_0000_1000)
+            BlockPattern(0b0000_0001_0000_0010_0000_0100_0000_1000)
         );
     }
 }
